@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component type="runtime">
+  <id>org.freedesktop.Sdk.Extension.kotlin</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0 AND BSD AND Netscape Public License 1.1 AND MIT AND Boost Software License 1.0 AND SUN</project_license>
+  <name>Kotlin FreedesktopSDK Extension</name>
+  <summary>The latest version of kotlin</summary>
+  <description>
+    <p>
+      This SDK extension allows the building and running of kotlin based applications.
+    </p>
+  </description>
+  <url type="homepage">https://kotlinlang.org/</url>
+  <url type="bugtracker">https://youtrack.jetbrains.com/issues/KT</url>
+  <developer_name>Mat Booth</developer_name>
+  <update_contact>mat.booth@gmail.com</update_contact>
+  <releases>
+    <release version="1.8.21" date="2023-04-25"/>
+  </releases>
+</component>

@@ -1,0 +1,84 @@
+id: org.freedesktop.Sdk.Extension.kotlin
+branch: '22.08'
+runtime: org.freedesktop.Sdk
+runtime-version: '22.08'
+build-extension: true
+sdk: org.freedesktop.Sdk
+separate-locales: false
+appstream-compose: false
+
+build-options:
+  prefix: /usr/lib/sdk/kotlin
+
+modules:
+  - name: setconf
+    buildsystem: simple
+    sources:
+      - type: file
+        url: https://setconf.roboticoverlords.org/setconf-0.7.7.tar.xz
+        dest-filename: setconf.tar.xz
+        sha256: 19315574540b3181fec31a4059b9e058381e0192317f153d181e7e7e2aa84d86
+    build-commands:
+      - mkdir -p $FLATPAK_DEST/bin
+      - tar xf setconf.tar.xz --directory=$FLATPAK_DEST/
+      - ls -a
+      - ls -a $FLATPAK_DEST
+      - install -Dm755 $FLATPAK_DEST/setconf-0.7.7/setconf.py $FLATPAK_DEST/bin/setconf
+      - rm -rf $FLATPAK_DEST/setconf-0.7.7
+
+  - name: kotlin
+    buildsystem: simple
+    sources:
+      - type: file
+        url: https://github.com/JetBrains/kotlin/releases/download/v1.8.21/kotlin-compiler-1.8.21.zip
+        dest-filename: kotlin.zip
+        sha512: 359c8d359bd43f68eee9c4fc0c1be473a19c42e4faf147fa42db233ce2ef3544d486f020b58c9ff6bf4857ba4c68275f762478da63c8bcc8628f6be09ea07648
+
+    build-commands:
+        - mkdir -p $FLATPAK_DEST/bin
+        - unzip -d $FLATPAK_DEST/ -q kotlin.zip
+        - $FLATPAK_DEST/bin/setconf $FLATPAK_DEST/kotlinc/bin/kotlin     DIR         $FLATPAK_DEST/bin
+        - $FLATPAK_DEST/bin/setconf $FLATPAK_DEST/kotlinc/bin/kotlinc-js  DIR         $FLATPAK_DEST/bin
+        - $FLATPAK_DEST/bin/setconf $FLATPAK_DEST/kotlinc/bin/kotlinc-jvm DIR         $FLATPAK_DEST/bin
+        - $FLATPAK_DEST/bin/setconf $FLATPAK_DEST/kotlinc/bin/kotlinc    KOTLIN_HOME $FLATPAK_DEST/kotlin
+
+        - install -Dm755 -t "$FLATPAK_DEST/bin" $FLATPAK_DEST/kotlinc/bin/kotlin
+        - install -Dm755 -t "$FLATPAK_DEST/bin" $FLATPAK_DEST/kotlinc/bin/kotlinc
+        - install -Dm755 -t "$FLATPAK_DEST/bin" $FLATPAK_DEST/kotlinc/bin/kotlinc-js
+        - install -Dm755 -t "$FLATPAK_DEST/bin" $FLATPAK_DEST/kotlinc/bin/kotlinc-jvm
+
+        - mkdir -p $FLATPAK_DEST/kotlin/lib
+        - for jar in $FLATPAK_DEST/kotlinc/lib/*.jar; do
+           install -Dm644 "$jar" "$FLATPAK_DEST/kotlin/lib"; done
+        - install -Dm644 $FLATPAK_DEST/kotlinc/build.txt "$FLATPAK_DEST/kotlin"
+
+        - mkdir -p $FLATPAK_DEST/share/licenses
+        - install -Dm644 $FLATPAK_DEST/kotlinc/license/LICENSE.txt "$FLATPAK_DEST/share/licenses"
+        - install -Dm644 $FLATPAK_DEST/kotlinc/license/NOTICE.txt "$FLATPAK_DEST/share/licenses"
+        - for txt in $FLATPAK_DEST/kotlinc/license/third_party/*.txt; do
+           install -Dm644 "$txt" "$FLATPAK_DEST/share/licenses"; done
+
+    post-install:
+      - rm -rf $FLATPAK_DEST/kotlinc
+      - rm -rf $FLATPAK_DEST/bin/setconf
+
+  - name: scripts
+    buildsystem: simple
+    sources:
+      - type: script
+        commands:
+          - export PATH=$PATH:/usr/lib/sdk/kotlin/bin
+        dest-filename: enable.sh
+    build-commands:
+      - cp enable.sh /usr/lib/sdk/kotlin/
+
+  - name: appdata
+    buildsystem: simple
+    sources:
+      - type: file
+        path: org.freedesktop.Sdk.Extension.kotlin.appdata.xml
+    build-commands:
+      - mkdir -p ${FLATPAK_DEST}/share/metainfo
+      - cp org.freedesktop.Sdk.Extension.kotlin.appdata.xml ${FLATPAK_DEST}/share/metainfo
+      - appstream-compose --basename=org.freedesktop.Sdk.Extension.kotlin --prefix=${FLATPAK_DEST}
+        --origin=flatpak org.freedesktop.Sdk.Extension.kotlin
